@@ -2,6 +2,8 @@ import type * as CSSUtil from './css-util'
 import type * as StyledComponent from './styled-component'
 import type * as ThemeUtil from './theme'
 import type * as Util from './util'
+import * as React from "react";
+import {IntrinsicElementsKeys} from "./styled-component";
 
 /** Remove an index signature from a type */
 export type RemoveIndex<T> = {[k in keyof T as string extends k ? never : number extends k ? never : k]: T[k]}
@@ -110,7 +112,7 @@ export default interface Stitches<
 			)
 	}
 	theme:
-		string 
+		string
 		& {
 			className: string
 			selector: string
@@ -208,8 +210,9 @@ export default interface Stitches<
 				| React.ComponentType<any>
 				| Util.Function
 				| { [name: string]: unknown }
-			)[], 
-			CSS = CSSUtil.CSS<Media, Theme, ThemeMap, Utils>
+			)[],
+			CSS = CSSUtil.CSS<Media, Theme, ThemeMap, Utils
+				>
 		>(
 			type: Type,
 			...composers: {
@@ -254,6 +257,9 @@ export default interface Stitches<
 								}
 							: Util.WideObject
 						)
+						defaultProps?: Partial<(Type extends IntrinsicElementsKeys | React.ComponentType<any> ? React.ComponentPropsWithRef<Type> : never)> &{
+							as?: IntrinsicElementsKeys | React.ComponentType<any>
+						}
 					} & CSS & {
 						[K2 in keyof Composers[K]]: K2 extends 'compoundVariants' | 'defaultVariants' | 'variants'
 							? unknown

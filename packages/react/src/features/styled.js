@@ -16,11 +16,12 @@ export const createStyledFunction = ({ /** @type {Config} */ config, /** @type {
 		const css = createCssFunction(config, sheet)
 
 		const styled = (...args) => {
-			const cssComponent = css(...args)
+			const {defaultProps, rest} = extractDefaultProps(...args)
+			const cssComponent = css(...rest)
 			const DefaultType = cssComponent[internal].type
 
 			const styledComponent = React.forwardRef((props, ref) => {
-				const Type = props && props.as || DefaultType
+				const Type = props && props.as || defaultProps.as || DefaultType
 
 				const { props: forwardProps, deferredInjector } = cssComponent(props)
 
@@ -29,10 +30,10 @@ export const createStyledFunction = ({ /** @type {Config} */ config, /** @type {
 				forwardProps.ref = ref
 
 				if (deferredInjector) {
-					return React.createElement(React.Fragment, null, React.createElement(Type, forwardProps), React.createElement(deferredInjector, null))
+					return React.createElement(React.Fragment, null, React.createElement(Type, {...defaultProps, ...forwardProps}), React.createElement(deferredInjector, null))
 				}
 
-				return React.createElement(Type, forwardProps)
+				return React.createElement(Type, {...defaultProps, ...forwardProps})
 			})
 
 			const toString = () => cssComponent.selector
@@ -49,3 +50,14 @@ export const createStyledFunction = ({ /** @type {Config} */ config, /** @type {
 		return styled
 	})
 )
+
+const extractDefaultProps = (...args) => {
+	let defaultProps = {};
+	args.forEach(arg => {
+		if (arg.defaultProps) {
+			defaultProps = {...defaultProps, ...arg.defaultProps};
+			delete arg.defaultProps;
+		}
+	})
+	return {defaultProps, rest:args}
+}
